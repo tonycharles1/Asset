@@ -1,0 +1,47 @@
+{% macro render_sidebar(active_page='') %}
+<div class="col-md-3 col-lg-2 sidebar">
+    <div class="sidebar-header">
+        <h5>Menu</h5>
+    </div>
+    <nav class="nav flex-column">
+        <a class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}" href="{{ url_for('dashboard') }}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'assets' else '' }}" href="{{ url_for('assets') }}">
+            <i class="bi bi-box-seam"></i> Assets
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'locations' else '' }}" href="{{ url_for('locations') }}">
+            <i class="bi bi-geo-alt"></i> Locations
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'categories' else '' }}" href="{{ url_for('categories') }}">
+            <i class="bi bi-tags"></i> Categories
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'subcategories' else '' }}" href="{{ url_for('subcategories') }}">
+            <i class="bi bi-tag"></i> Subcategories
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'asset_types' else '' }}" href="{{ url_for('asset_types') }}">
+            <i class="bi bi-list-ul"></i> Asset Types
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'brands' else '' }}" href="{{ url_for('brands') }}">
+            <i class="bi bi-star"></i> Brands
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'asset_movements' else '' }}" href="{{ url_for('asset_movements') }}">
+            <i class="bi bi-arrow-left-right"></i> Asset Movements
+        </a>
+        <hr>
+        <a class="nav-link {{ 'active' if active_page == 'depreciation' else '' }}" href="{{ url_for('depreciation') }}">
+            <i class="bi bi-calculator"></i> Depreciation
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'asset_report' else '' }}" href="{{ url_for('asset_report') }}">
+            <i class="bi bi-file-earmark-text"></i> Asset Report
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'movement_report' else '' }}" href="{{ url_for('movement_report') }}">
+            <i class="bi bi-graph-up-arrow"></i> Movement Report
+        </a>
+        <a class="nav-link {{ 'active' if active_page == 'logs' else '' }}" href="{{ url_for('logs') }}">
+            <i class="bi bi-journal-text"></i> Logs
+        </a>
+    </nav>
+</div>
+{% endmacro %}
+

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center" style="min-height: calc(100vh - 200px); align-items: center;">
+    <div class="col-md-5 col-lg-4">
+        <div style="text-align: center; margin-bottom: 32px;">
+            <h1 style="font-size: 2rem; font-weight: 700; color: #2d3748; margin-bottom: 8px;">Create Account</h1>
+            <p style="color: #718096;">Get started with your asset management system</p>
+        </div>
+        <div class="card">
+            <div class="card-body" style="padding: 32px;">
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="mb-4">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required 
+                               placeholder="Choose a username">
+                    </div>
+                    <div class="mb-4">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required 
+                               placeholder="your.email@example.com">
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required 
+                               placeholder="Create a password">
+                    </div>
+                    <div class="mb-4">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role" name="role">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <small style="color: #718096; font-size: 0.875rem;">
+                            Note: First user will be automatically set as admin
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" style="padding: 12px; font-size: 1rem;">
+                        Get started
+                    </button>
+                </form>
+                <hr style="margin: 24px 0; border-color: #e2e8f0;">
+                <p class="text-center mb-0" style="color: #718096;">
+                    Already have an account? 
+                    <a href="{{ url_for('login') }}" style="color: #ff6b35; text-decoration: none; font-weight: 600;">
+                        Login here
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

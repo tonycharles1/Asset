@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% from "includes/sidebar.html" import render_sidebar %}
+
+{% block title %}Asset Types - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    {{ render_sidebar('asset_types') }}
+    <div class="col-md-9 col-lg-10">
+        <div style="margin-bottom: 32px;">
+            <h1 style="font-size: 2.25rem; font-weight: 700; color: #2d3748; margin-bottom: 8px;">Asset Types</h1>
+            <p style="color: #718096; font-size: 1rem; margin: 0;">Manage asset types and depreciation values</p>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Add New Asset Type</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_asset_type') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="asset_code" placeholder="Asset Code" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="asset_type" placeholder="Asset Type" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" step="0.01" class="form-control" name="depreciation_value" placeholder="Depreciation Value (%)" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">Add</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Asset Types</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Asset Code</th>
+                                <th>Asset Type</th>
+                                <th>Depreciation Value (%)</th>
+                                {% if role == 'admin' %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset_type in asset_types %}
+                            <tr>
+                                <td>{{ asset_type.get('Asset Code', '') }}</td>
+                                <td>{{ asset_type.get('Asset Type', '') }}</td>
+                                <td>{{ asset_type.get('Depreciation Value (%)', '') }}</td>
+                                {% if role == 'admin' %}
+                                <td>
+                                    <form method="POST" action="{{ url_for('delete_asset_type', asset_code=asset_type.get('Asset Code')) }}" 
+                                          onsubmit="return confirm('Are you sure you want to delete this asset type?');" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

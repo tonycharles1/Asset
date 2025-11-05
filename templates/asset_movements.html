@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "includes/sidebar.html" import render_sidebar %}
+
+{% block title %}Asset Movements - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    {{ render_sidebar('asset_movements') }}
+    <div class="col-md-9 col-lg-10">
+        <div style="margin-bottom: 32px;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h1 style="font-size: 2.25rem; font-weight: 700; color: #2d3748; margin-bottom: 8px;">Asset Movements</h1>
+                    <p style="color: #718096; font-size: 1rem; margin: 0;">View and manage asset movements</p>
+                </div>
+                <a href="{{ url_for('add_asset_movement') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Record Movement
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Movement History</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Asset Code</th>
+                                <th>From Location</th>
+                                <th>To Location</th>
+                                <th>Movement Date</th>
+                                <th>Moved By</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for movement in movements %}
+                            <tr>
+                                <td>{{ movement.get('ID', '') }}</td>
+                                <td>{{ movement.get('Asset Code', '') }}</td>
+                                <td>{{ movement.get('From Location', '') }}</td>
+                                <td>{{ movement.get('To Location', '') }}</td>
+                                <td>{{ movement.get('Movement Date', '') }}</td>
+                                <td>{{ movement.get('Moved By', '') }}</td>
+                                <td>{{ movement.get('Notes', '') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
