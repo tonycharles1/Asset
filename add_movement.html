@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "includes/sidebar.html" import render_sidebar %}
+
+{% block title %}Add Asset Movement - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    {{ render_sidebar('asset_movements') }}
+    <div class="col-md-9 col-lg-10">
+        <div style="margin-bottom: 32px;">
+            <h1 style="font-size: 2.25rem; font-weight: 700; color: #2d3748; margin-bottom: 8px;">Record Asset Movement</h1>
+            <p style="color: #718096; font-size: 1rem; margin: 0;">Track asset location changes</p>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Movement Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_asset_movement') }}">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Asset Code <span class="text-danger">*</span></label>
+                            <select class="form-select" name="asset_code" required>
+                                <option value="">Select Asset</option>
+                                {% for asset in assets %}
+                                <option value="{{ asset.get('Asset Code', '') }}">
+                                    {{ asset.get('Asset Code', '') }} - {{ asset.get('Item Name', '') }} ({{ asset.get('Location', 'N/A') }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">From Location <span class="text-danger">*</span></label>
+                            <select class="form-select" name="from_location" required>
+                                <option value="">Select Location</option>
+                                {% for location in locations %}
+                                <option value="{{ location.get('Location Name', '') }}">{{ location.get('Location Name', '') }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">To Location <span class="text-danger">*</span></label>
+                            <select class="form-select" name="to_location" required>
+                                <option value="">Select Location</option>
+                                {% for location in locations %}
+                                <option value="{{ location.get('Location Name', '') }}">{{ location.get('Location Name', '') }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="notes" rows="3" placeholder="Optional notes about the movement"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Record Movement
+                        </button>
+                        <a href="{{ url_for('asset_movements') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

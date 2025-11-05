@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% from "includes/sidebar.html" import render_sidebar %}
+
+{% block title %}Asset Report - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    {{ render_sidebar('asset_report') }}
+    <div class="col-md-9 col-lg-10">
+        <div style="margin-bottom: 32px;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h1 style="font-size: 2.25rem; font-weight: 700; color: #2d3748; margin-bottom: 8px;">Asset Report</h1>
+                    <p style="color: #718096; font-size: 1rem; margin: 0;">Detailed report of all assets</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('export_asset_report', category=current_category, location=current_location, department=current_department, search=current_search) }}" class="btn btn-success me-2">
+                        <i class="bi bi-file-earmark-excel"></i> Export to Excel
+                    </a>
+                    <button onclick="window.print()" class="btn btn-primary">
+                        <i class="bi bi-printer"></i> Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-funnel"></i> Filters</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('asset_report') }}">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.get('Category Name', '') }}" {% if cat.get('Category Name') == current_category %}selected{% endif %}>
+                                    {{ cat.get('Category Name', '') }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Location</label>
+                            <select class="form-select" name="location">
+                                <option value="">All Locations</option>
+                                {% for loc in locations %}
+                                <option value="{{ loc.get('Location Name', '') }}" {% if loc.get('Location Name') == current_location %}selected{% endif %}>
+                                    {{ loc.get('Location Name', '') }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Department</label>
+                            <select class="form-select" name="department">
+                                <option value="">All Departments</option>
+                                {% for dept in departments %}
+                                <option value="{{ dept }}" {% if dept == current_department %}selected{% endif %}>
+                                    {{ dept }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Search</label>
+                            <input type="text" class="form-control" name="search" 
+                                   placeholder="Asset Code, Name, Brand..." 
+                                   value="{{ current_search }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Apply Filters
+                            </button>
+                            <a href="{{ url_for('asset_report') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Report Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Report Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-primary">{{ assets|length }}</h3>
+                            <p class="text-muted">Total Assets</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-success">
+                                {% set total_value = 0 %}
+                                {% for asset in assets %}
+                                    {% set amount = asset.get('Amount', '')|default('0')|replace(',', '')|float %}
+                                    {% set total_value = total_value + amount %}
+                                {% endfor %}
+                                {{ "%.2f"|format(total_value) }}
+                            </h3>
+                            <p class="text-muted">Total Value</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-info">
+                                {% set locations_list = [] %}
+                                {% for asset in assets %}
+                                    {% if asset.get('Location') and asset.get('Location') not in locations_list %}
+                                        {% set _ = locations_list.append(asset.get('Location')) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ locations_list|length }}
+                            </h3>
+                            <p class="text-muted">Locations</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-warning">
+                                {% set categories_list = [] %}
+                                {% for asset in assets %}
+                                    {% if asset.get('Asset Category') and asset.get('Asset Category') not in categories_list %}
+                                        {% set _ = categories_list.append(asset.get('Asset Category')) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ categories_list|length }}
+                            </h3>
+                            <p class="text-muted">Categories</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assets Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Asset Details</h5>
+                <span class="badge bg-secondary">{{ assets|length }} items</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Asset Code</th>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th>Subcategory</th>
+                                <th>Brand</th>
+                                <th>Location</th>
+                                <th>Department</th>
+                                <th>Amount</th>
+                                <th>Date of Purchase</th>
+                                <th>Warranty</th>
+                                <th>Ownership</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in assets %}
+                            <tr>
+                                <td><strong>{{ asset.get('Asset Code', '') }}</strong></td>
+                                <td>{{ asset.get('Item Name', '') }}</td>
+                                <td>{{ asset.get('Asset Category', '') }}</td>
+                                <td>{{ asset.get('Asset SubCategory', '') }}</td>
+                                <td>{{ asset.get('Brand', '') }}</td>
+                                <td>{{ asset.get('Location', '') }}</td>
+                                <td>{{ asset.get('Department', '') }}</td>
+                                <td>{{ asset.get('Amount', '') }}</td>
+                                <td>{{ asset.get('Date of Purchase', '') }}</td>
+                                <td>{{ asset.get('Warranty', '') }}</td>
+                                <td>{{ asset.get('Ownership', '') }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="11" class="text-center text-muted">No assets found matching the filters</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+@media print {
+    .sidebar, .no-print, .btn, .card-header button {
+        display: none !important;
+    }
+    .card {
+        border: none;
+        box-shadow: none;
+    }
+}
+</style>
+{% endblock %}
+{% endblock %}
+

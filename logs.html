@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% from "includes/sidebar.html" import render_sidebar %}
+
+{% block title %}Activity Logs - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    {{ render_sidebar('logs') }}
+    <div class="col-md-9 col-lg-10">
+        <div style="margin-bottom: 32px;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h1 style="font-size: 2.25rem; font-weight: 700; color: #2d3748; margin-bottom: 8px;">Activity Logs</h1>
+                    <p style="color: #718096; font-size: 1rem; margin: 0;">System activity and audit trail</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('export_logs', type=current_type, user=current_user, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success me-2">
+                        <i class="bi bi-file-earmark-excel"></i> Export to Excel
+                    </a>
+                    <button onclick="window.print()" class="btn btn-primary">
+                        <i class="bi bi-printer"></i> Print Logs
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-funnel"></i> Filters</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('logs') }}">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Type</label>
+                            <select class="form-select" name="type">
+                                <option value="">All Types</option>
+                                {% for log_type in log_types %}
+                                <option value="{{ log_type }}" {% if log_type == current_type %}selected{% endif %}>
+                                    {{ log_type }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">User</label>
+                            <select class="form-select" name="user">
+                                <option value="">All Users</option>
+                                {% for u in users %}
+                                <option value="{{ u }}" {% if u == current_user %}selected{% endif %}>
+                                    {{ u }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Date From</label>
+                            <input type="date" class="form-control" name="date_from" value="{{ current_date_from }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Date To</label>
+                            <input type="date" class="form-control" name="date_to" value="{{ current_date_to }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-search"></i> Apply Filters
+                            </button>
+                            <a href="{{ url_for('logs') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Logs Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h3 class="text-primary">{{ logs|length }}</h3>
+                            <p class="text-muted">Total Log Entries</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h3 class="text-success">
+                                {% set unique_users_log_list = [] %}
+                                {% for log in logs %}
+                                    {% if log.get('user') and log.get('user') not in unique_users_log_list %}
+                                        {% set _ = unique_users_log_list.append(log.get('user')) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ unique_users_log_list|length }}
+                            </h3>
+                            <p class="text-muted">Active Users</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h3 class="text-info">
+                                {% set movement_logs_count = 0 %}
+                                {% for log in logs %}
+                                    {% if log.get('type') == 'Movement' %}
+                                        {% set movement_logs_count = movement_logs_count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ movement_logs_count }}
+                            </h3>
+                            <p class="text-muted">Movements</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Activity Log</h5>
+                <span class="badge bg-secondary">{{ logs|length }} entries</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Type</th>
+                                <th>User</th>
+                                <th>Description</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ log.get('date', '') }}</td>
+                                <td>
+                                    {% set log_type = log.get('type', '') %}
+                                    {% set action = log.get('action', '') %}
+                                    {% if log_type == 'Movement' %}
+                                        <span class="badge bg-primary">{{ log_type }}</span>
+                                    {% elif action == 'Add' %}
+                                        <span class="badge bg-success">{{ log_type }}</span>
+                                    {% elif action == 'Update' %}
+                                        <span class="badge bg-warning text-dark">{{ log_type }}</span>
+                                    {% elif action == 'Delete' %}
+                                        <span class="badge bg-danger">{{ log_type }}</span>
+                                    {% else %}
+                                        <span class="badge bg-info">{{ log_type }}</span>
+                                    {% endif %}
+                                    {% if action %}
+                                        <br><small class="text-muted">{{ action }}</small>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ log.get('user', '') }}</strong></td>
+                                <td>{{ log.get('description', '') }}</td>
+                                <td class="text-muted">{{ log.get('details', '') }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No log entries found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+@media print {
+    .sidebar, .no-print, .btn, .card-header button {
+        display: none !important;
+    }
+    .card {
+        border: none;
+        box-shadow: none;
+    }
+}
+</style>
+{% endblock %}
+{% endblock %}
+

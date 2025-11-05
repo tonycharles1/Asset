@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Barcodes - Asset Management System</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: white;
+        }
+        
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .no-print button, .no-print a {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        
+        .print-button {
+            background: #007bff;
+            color: white;
+        }
+        
+        .back-button {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .barcode-container {
+            display: inline-block;
+            width: 300px;
+            margin: 15px;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 8px;
+            text-align: center;
+            page-break-inside: avoid;
+            vertical-align: top;
+        }
+        
+        .barcode-container h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .barcode-container p {
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        
+        .barcode-image {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+        }
+        
+        .barcode-image svg {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            
+            .no-print {
+                display: none;
+            }
+            
+            .barcode-container {
+                border: 1px solid #000;
+                margin: 10px;
+                page-break-inside: avoid;
+            }
+            
+            @page {
+                size: letter;
+                margin: 0.5in;
+            }
+        }
+        
+        @media screen {
+            .barcode-grid {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button onclick="window.print()" class="print-button">
+            🖨️ Print Barcodes
+        </button>
+        <a href="{{ url_for('assets') }}" class="back-button">
+            ← Back to Assets
+        </a>
+        <p style="margin-top: 10px; color: #666;">
+            Print dialog will open automatically. If it doesn't, click the Print button above.
+        </p>
+    </div>
+    
+    <div class="barcode-grid">
+        {% for asset in assets %}
+        <div class="barcode-container">
+            <h4>{{ asset.get('Item Name', '') }}</h4>
+            <p><strong>Code:</strong> {{ asset.get('Asset Code', '') }}</p>
+            {% if asset.get('Location') %}
+            <p><strong>Location:</strong> {{ asset.get('Location', '') }}</p>
+            {% endif %}
+            <div class="barcode-image">
+                <svg id="barcode-{{ loop.index }}"></svg>
+            </div>
+            <p style="font-size: 12px; margin-top: 10px;">{{ asset.get('Asset Code', '') }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Generate barcodes
+        {% for asset in assets %}
+        try {
+            JsBarcode("#barcode-{{ loop.index }}", "{{ asset.get('Asset Code', '') }}", {
+                format: "CODE128",
+                width: 2,
+                height: 60,
+                displayValue: false,
+                margin: 10
+            });
+        } catch(e) {
+            console.error("Error generating barcode:", e);
+            document.getElementById("barcode-{{ loop.index }}").innerHTML = 
+                '<text x="50%" y="50%" text-anchor="middle" font-size="14">Barcode Error</text>';
+        }
+        {% endfor %}
+        
+        // Auto-trigger print dialog when page loads
+        window.addEventListener('load', function() {
+            // Small delay to ensure barcodes are rendered
+            setTimeout(function() {
+                window.print();
+            }, 800);
+        });
+        
+        // Also trigger print when barcodes are fully rendered
+        window.addEventListener('DOMContentLoaded', function() {
+            // Additional check after a longer delay to ensure all barcodes are rendered
+            setTimeout(function() {
+                // Check if all barcodes are rendered
+                const barcodeElements = document.querySelectorAll('[id^="barcode-"]');
+                let allRendered = true;
+                barcodeElements.forEach(function(el) {
+                    if (!el.querySelector('svg')) {
+                        allRendered = false;
+                    }
+                });
+                
+                if (allRendered && barcodeElements.length > 0) {
+                    // Small delay then print
+                    setTimeout(function() {
+                        window.print();
+                    }, 300);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+

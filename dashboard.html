@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% from "includes/sidebar.html" import render_sidebar %}
+
+{% block title %}Dashboard - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    {{ render_sidebar('dashboard') }}
+    <div class="col-md-9 col-lg-10">
+        <div style="margin-bottom: 32px;">
+            <h1 style="font-size: 2.25rem; font-weight: 700; color: #2d3748; margin-bottom: 8px;">Dashboard</h1>
+            <p style="color: #718096; font-size: 1rem;">Overview of your asset management system</p>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="card text-center" style="padding: 32px 24px;">
+                    <div style="font-size: 3rem; font-weight: 700; color: #ff6b35; margin-bottom: 8px;">
+                        {{ assets|length }}
+                    </div>
+                    <p style="color: #718096; font-weight: 500; margin: 0;">Total Assets</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card text-center" style="padding: 32px 24px;">
+                    <div style="font-size: 2rem; font-weight: 700; color: #48bb78; margin-bottom: 8px;">
+                        ${{ "{:,.2f}".format(total_value) }}
+                    </div>
+                    <p style="color: #718096; font-weight: 500; margin: 0;">Total Asset Value</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card text-center" style="padding: 32px 24px;">
+                    <div style="font-size: 3rem; font-weight: 700; color: #4299e1; margin-bottom: 8px;">
+                        <i class="bi bi-plus-circle"></i>
+                    </div>
+                    <a href="{{ url_for('add_asset') }}" class="btn btn-primary" style="margin-top: 8px;">Add Asset</a>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card text-center" style="padding: 32px 24px;">
+                    <div style="font-size: 3rem; font-weight: 700; color: #ed8936; margin-bottom: 8px;">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <p style="color: #718096; font-weight: 500; margin-bottom: 12px;">Reports</p>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <a href="{{ url_for('depreciation') }}" class="btn btn-warning btn-sm">Depreciation</a>
+                        <a href="{{ url_for('asset_report') }}" class="btn btn-info btn-sm">Asset Report</a>
+                        <a href="{{ url_for('movement_report') }}" class="btn btn-success btn-sm">Movement Report</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphs Row 1 -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Assets by Category</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Assets by Location</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="locationChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphs Row 2 -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-pie-chart-fill"></i> Assets by Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Top Brands</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="brandChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Chart.js default colors
+    const chartColors = [
+        '#ff6b35', '#48bb78', '#4299e1', '#ed8936', '#9f7aea', 
+        '#f56565', '#38b2ac', '#fbbf24', '#ec4899', '#6366f1',
+        '#14b8a6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
+    ];
+
+    // Assets by Category - Pie Chart
+    const categoryData = {
+        labels: {{ category_data.keys()|list|tojson }},
+        datasets: [{
+            data: {{ category_data.values()|list|tojson }},
+            backgroundColor: chartColors.slice(0, {{ category_data|length }}),
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    };
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'pie',
+        data: categoryData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            family: 'DIN, sans-serif',
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    font: {
+                        family: 'DIN, sans-serif'
+                    }
+                }
+            }
+        }
+    });
+
+    // Assets by Location - Bar Chart
+    const locationData = {
+        labels: {{ location_data.keys()|list|tojson }},
+        datasets: [{
+            label: 'Number of Assets',
+            data: {{ location_data.values()|list|tojson }},
+            backgroundColor: '#4299e1',
+            borderColor: '#3182ce',
+            borderWidth: 2,
+            borderRadius: 8
+        }]
+    };
+
+    new Chart(document.getElementById('locationChart'), {
+        type: 'bar',
+        data: locationData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    font: {
+                        family: 'DIN, sans-serif'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: {
+                            family: 'DIN, sans-serif'
+                        },
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: '#e2e8f0'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            family: 'DIN, sans-serif'
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Assets by Status - Doughnut Chart
+    const statusData = {
+        labels: {{ status_data.keys()|list|tojson }},
+        datasets: [{
+            data: {{ status_data.values()|list|tojson }},
+            backgroundColor: [
+                '#48bb78',  // Active - Green
+                '#718096',  // Inactive - Gray
+                '#ed8936',  // Under Maintenance - Orange
+                '#f56565',  // Disposed - Red
+                '#4299e1',  // Sold - Blue
+                '#2d3748'   // Lost - Dark
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    };
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: statusData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            family: 'DIN, sans-serif',
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    font: {
+                        family: 'DIN, sans-serif'
+                    }
+                }
+            }
+        }
+    });
+
+    // Top Brands - Horizontal Bar Chart
+    const brandData = {
+        labels: {{ brand_data.keys()|list|tojson }},
+        datasets: [{
+            label: 'Number of Assets',
+            data: {{ brand_data.values()|list|tojson }},
+            backgroundColor: '#ff6b35',
+            borderColor: '#e55a2b',
+            borderWidth: 2,
+            borderRadius: 8
+        }]
+    };
+
+    new Chart(document.getElementById('brandChart'), {
+        type: 'bar',
+        data: brandData,
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    font: {
+                        family: 'DIN, sans-serif'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: {
+                            family: 'DIN, sans-serif'
+                        },
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: '#e2e8f0'
+                    }
+                },
+                y: {
+                    ticks: {
+                        font: {
+                            family: 'DIN, sans-serif'
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

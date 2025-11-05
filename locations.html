@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "includes/sidebar.html" import render_sidebar %}
+
+{% block title %}Locations - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    {{ render_sidebar('locations') }}
+    <div class="col-md-9 col-lg-10">
+        <div style="margin-bottom: 32px;">
+            <h1 style="font-size: 2.25rem; font-weight: 700; color: #2d3748; margin-bottom: 8px;">Asset Locations</h1>
+            <p style="color: #718096; font-size: 1rem; margin: 0;">Manage asset storage locations</p>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Add New Location</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_location') }}">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" name="location_name" placeholder="Location Name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">Add Location</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Locations</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Location Name</th>
+                                {% if role == 'admin' %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for location in locations %}
+                            <tr>
+                                <td>{{ location.get('ID', '') }}</td>
+                                <td>{{ location.get('Location Name', '') }}</td>
+                                {% if role == 'admin' %}
+                                <td>
+                                    <form method="POST" action="{{ url_for('delete_location', location_id=location.get('ID')) }}" 
+                                          onsubmit="return confirm('Are you sure you want to delete this location?');" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

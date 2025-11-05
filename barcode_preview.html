@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Barcode Preview - Asset Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .barcode-container {
+        text-align: center;
+        margin: 20px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        page-break-inside: avoid;
+    }
+    @media print {
+        .no-print {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="no-print mb-3">
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="bi bi-printer"></i> Print
+        </button>
+        <a href="{{ url_for('assets') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Assets
+        </a>
+    </div>
+    
+    {% for asset in assets %}
+    <div class="barcode-container">
+        <h4>{{ asset.get('Item Name', '') }}</h4>
+        <p><strong>Asset Code:</strong> {{ asset.get('Asset Code', '') }}</p>
+        {% if asset.get('Location') %}
+        <p><strong>Location:</strong> {{ asset.get('Location') }}</p>
+        {% endif %}
+        <!-- Barcode will be generated client-side or via API -->
+        <div id="barcode-{{ loop.index }}"></div>
+    </div>
+    {% endfor %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script>
+    {% for asset in assets %}
+    JsBarcode("#barcode-{{ loop.index }}", "{{ asset.get('Asset Code', '') }}", {
+        format: "CODE128",
+        width: 2,
+        height: 50,
+        displayValue: true
+    });
+    {% endfor %}
+</script>
+{% endblock %}
+
+
