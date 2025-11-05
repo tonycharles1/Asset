@@ -102,32 +102,46 @@ class GoogleSheetsDB:
         try:
             # Get credentials from Streamlit secrets
             if 'GOOGLE_SHEETS' in st.secrets:
-                creds_dict = {
-                    "type": st.secrets["GOOGLE_SHEETS"]["type"],
-                    "project_id": st.secrets["GOOGLE_SHEETS"]["project_id"],
-                    "private_key_id": st.secrets["GOOGLE_SHEETS"]["private_key_id"],
-                    "private_key": st.secrets["GOOGLE_SHEETS"]["private_key"],
-                    "client_email": st.secrets["GOOGLE_SHEETS"]["client_email"],
-                    "client_id": st.secrets["GOOGLE_SHEETS"]["client_id"],
-                    "auth_uri": st.secrets["GOOGLE_SHEETS"]["auth_uri"],
-                    "token_uri": st.secrets["GOOGLE_SHEETS"]["token_uri"],
-                    "auth_provider_x509_cert_url": st.secrets["GOOGLE_SHEETS"]["auth_provider_x509_cert_url"],
-                    "client_x509_cert_url": st.secrets["GOOGLE_SHEETS"]["client_x509_cert_url"]
-                }
-                
-                credentials = Credentials.from_service_account_info(
-                    creds_dict,
-                    scopes=['https://www.googleapis.com/auth/spreadsheets',
-                           'https://www.googleapis.com/auth/drive']
-                )
+                try:
+                    creds_dict = {
+                        "type": st.secrets["GOOGLE_SHEETS"]["type"],
+                        "project_id": st.secrets["GOOGLE_SHEETS"]["project_id"],
+                        "private_key_id": st.secrets["GOOGLE_SHEETS"]["private_key_id"],
+                        "private_key": st.secrets["GOOGLE_SHEETS"]["private_key"],
+                        "client_email": st.secrets["GOOGLE_SHEETS"]["client_email"],
+                        "client_id": st.secrets["GOOGLE_SHEETS"]["client_id"],
+                        "auth_uri": st.secrets["GOOGLE_SHEETS"]["auth_uri"],
+                        "token_uri": st.secrets["GOOGLE_SHEETS"]["token_uri"],
+                        "auth_provider_x509_cert_url": st.secrets["GOOGLE_SHEETS"]["auth_provider_x509_cert_url"],
+                        "client_x509_cert_url": st.secrets["GOOGLE_SHEETS"]["client_x509_cert_url"]
+                    }
+                    
+                    credentials = Credentials.from_service_account_info(
+                        creds_dict,
+                        scopes=['https://www.googleapis.com/auth/spreadsheets',
+                               'https://www.googleapis.com/auth/drive']
+                    )
+                except Exception as e:
+                    st.warning(f"Error loading from secrets: {e}. Trying credentials.json file...")
+                    # Fallback to file
+                    if os.path.exists('credentials.json'):
+                        credentials = Credentials.from_service_account_file(
+                            'credentials.json',
+                            scopes=['https://www.googleapis.com/auth/spreadsheets',
+                                   'https://www.googleapis.com/auth/drive']
+                        )
+                    else:
+                        raise Exception("No credentials found in secrets or credentials.json file")
             else:
-                # Fallback to environment variable or file
-                creds_file = os.environ.get('GOOGLE_SHEETS_CREDENTIALS', 'credentials.json')
-                credentials = Credentials.from_service_account_file(
-                    creds_file,
-                    scopes=['https://www.googleapis.com/auth/spreadsheets',
-                           'https://www.googleapis.com/auth/drive']
-                )
+                # Fallback to credentials.json file
+                if os.path.exists('credentials.json'):
+                    credentials = Credentials.from_service_account_file(
+                        'credentials.json',
+                        scopes=['https://www.googleapis.com/auth/spreadsheets',
+                               'https://www.googleapis.com/auth/drive']
+                    )
+                else:
+                    raise Exception("No credentials found. Please add secrets.toml or credentials.json file")
             
             self.client = gspread.authorize(credentials)
             sheet_id = st.secrets.get("GOOGLE_SHEET_ID", "1q9jfezVWpFYAmvjo81Lk788kf9DNwqvSx7yxHWRGkec")
