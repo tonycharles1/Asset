@@ -1,13 +1,11 @@
-streamlit>=1.28.0
-gspread>=5.12.0
-google-auth>=2.23.0
-google-auth-oauthlib>=1.1.0
-google-auth-httplib2>=0.1.1
-python-dotenv>=1.0.0
-reportlab>=4.0.0
-Pillow>=10.0.0
-openpyxl>=3.1.0
-pandas>=2.0.0
-# python-barcode is optional - barcode functionality will be disabled if not available
-# python-barcode==0.15.1
+streamlit==1.28.0
+gspread==5.12.0
+google-auth==2.23.4
+google-auth-oauthlib==1.1.0
+google-auth-httplib2==0.1.1
+python-dotenv==1.0.0
+reportlab==4.0.7
+Pillow==10.4.0
+openpyxl==3.1.2
+pandas==2.0.3
 
