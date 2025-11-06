@@ -13,6 +13,6 @@ echo Browser will open automatically at http://localhost:8501
 echo.
 timeout /t 2 /nobreak >nul
 start http://localhost:8501
-streamlit run app_streamlit.py
+python -m streamlit run app_streamlit.py
 pause
 
