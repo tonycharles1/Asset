@@ -7,3 +7,10 @@ font = "sans-serif"
 
 [server]
 headless = false
+runOnSave = true
+fileWatcherType = "auto"
+
+[browser]
+serverAddress = "localhost"
+serverPort = 8501
+gatherUsageStats = false
